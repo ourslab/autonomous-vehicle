@@ -175,7 +175,35 @@ INFO: Enabling workspace layer in bblayers.conf
 [INFO] Successfully configured project
 ```
 
-17. Build the Petalinux project
+17. Configure USB-PHY
+
+```
+$ vim project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi
+/include/ "system-conf.dtsi"
+
+/{
+  usb_phy0: usb_phy@0 {
+    compatible = "ulpi-phy";
+    #phy-cells = <0>;
+    reg = <0xe0002000 0x1000>;
+    view-port = <0x0170>;
+    drv-vbus;
+  };
+};
+
+&usb0 {
+  compatible = "xlnx,zynq-usb-2.20a", "chipidea,usb2";
+  status = "okay";
+  clocks = <0x1 0x1c>;
+  dr_mode = "host";
+  interrupt-parent = <0x4>;
+  interrupts = <0x0 0x15 0x4>;
+  reg = <0xe0002000 0x1000>;
+  usb-phy = <&usb_phy0>;
+};
+```
+
+18. Build the Petalinux project
 
 ```
 $ petalinux-build
@@ -210,7 +238,7 @@ Summary: There were 2 WARNING messages.
 [INFO] Successfully built project
 ```
 
-18. Generate boot image
+19. Generate boot image
 
 ```
 $ petalinux-package boot --force --fsbl images/linux/zynq_fsbl.elf --fpga images/linux/system.bit --u-boot
